@@ -1,0 +1,11 @@
+
+.env
+
+
+salida_datos/
+*.csv
+
+# Archivos temporales de Python y del sistema
+__pycache__/
+.DS_Store
+venv/

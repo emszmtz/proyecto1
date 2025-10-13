@@ -2,6 +2,7 @@ import os
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
+
 from dotenv import load_dotenv
 import json
 import yfinance as yf
@@ -17,7 +18,8 @@ ALPHA_KEY = os.getenv("alpha_key")
 TWELVE_DATA_KEY = os.getenv("12data_key")
 
 if not ALPHA_KEY or not TWELVE_DATA_KEY:
-    raise SystemExit("❌ No se encontraron las claves 'alpha_key' o '12data_key' en el .env")
+    #Print ("No se han encontrado las claves")
+    raise SystemExit("No se encontraron las API keys en el .env")
 
 # --- PARÁMETROS ---
 TICKERS = ["GOOG", "AAPL"]
@@ -27,15 +29,21 @@ start_date_str = start_date.strftime('%Y-%m-%d')
 end_date_str = end_date.strftime('%Y-%m-%d')
 
 # --- RUTA DE SALIDA ---
-output_dir = "salida_datos"
+output_dir = "/Users/emiliosanchez/Desktop/MIAX/proyecto1_descarga_datos/proyecto1/salida_datos"
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
-output_file = os.path.join(output_dir, "datos_consolidados_final.csv")
+
+# generamos un nombre de archivo con fecha y hora.
+timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M')
+file_name = f"datos_consolidados_{timestamp}.csv"
+output_file = os.path.join(output_dir, file_name)
 
 # ==============================================================================
 # 2. FUNCIONES DE DESCARGA DE DATOS
 # ==============================================================================
 
+
+# 2.1 DESCARGA DE ALPHA VANTAGE
 def descargar_alpha_vantage(symbol):
     """Descarga datos diarios de Alpha Vantage."""
     print(f"  -> Obteniendo datos de Alpha Vantage para {symbol}...")
@@ -53,12 +61,12 @@ def descargar_alpha_vantage(symbol):
         df = df[df.index >= start_date].reset_index().rename(columns={'index': 'date'})
         df['symbol'] = symbol
         df['source'] = 'Alpha Vantage'
-        print(f"  ✅ {symbol} (Alpha Vantage): {len(df)} filas descargadas.")
+        print(f"  {symbol} (Alpha Vantage): {len(df)} filas descargadas.")
         return df
     except Exception as e:
-        print(f"  ❌ {symbol} (Alpha Vantage): Ocurrió un error - {e}")
+        print(f"  {symbol} (Alpha Vantage): Ocurrió un error - {e}")
         return None
-
+#2.2 DESCARGA DESDE YAHOO FINANCE
 def descargar_yfinance(symbol):
     """Descarga y limpia datos diarios de Yahoo Finance, corrigiendo el orden de las operaciones."""
     print(f"  -> Obteniendo datos de Yahoo Finance para {symbol}...")
@@ -70,11 +78,11 @@ def descargar_yfinance(symbol):
             print(f"  ⚠️  {symbol} (Yahoo Finance): No se encontraron datos.")
             return None
         
-        # Aplanar MultiIndex si existe
+        # Aplanar MultiIndex, sino da problemas al hacer el pd.concat
         if isinstance(df.columns, pd.MultiIndex):
             df.columns = df.columns.droplevel(1)
 
-        # --- CORRECCIÓN DE ORDEN ---
+        
         # 1. Resetear el índice PRIMERO para que 'Date' se convierta en una columna.
         df = df.reset_index()
         
@@ -89,12 +97,12 @@ def descargar_yfinance(symbol):
         df['symbol'] = symbol
         df['source'] = 'Yahoo Finance'
         
-        print(f"  ✅ {symbol} (Yahoo Finance): {len(df)} filas descargadas.")
+        print(f"  {symbol} (Yahoo Finance): {len(df)} filas descargadas.")
         return df
     except Exception as e:
-        print(f"  ❌ {symbol} (Yahoo Finance): Ocurrió un error - {e}")
+        print(f"   {symbol} (Yahoo Finance): Ocurrió un error - {e}")
         return None
-
+# 2.3 DESCARGA DESDE 12 DATA
 def descargar_twelve_data(symbol):
     """Descarga datos diarios de Twelve Data."""
     print(f"  -> Obteniendo datos de Twelve Data para {symbol}...")
@@ -105,10 +113,10 @@ def descargar_twelve_data(symbol):
         df = ts.as_pandas().iloc[::-1].reset_index().rename(columns={'datetime': 'date'})
         df['symbol'] = symbol
         df['source'] = 'Twelve Data'
-        print(f"  ✅ {symbol} (Twelve Data): {len(df)} filas descargadas.")
+        print(f"   {symbol} (Twelve Data): {len(df)} filas descargadas.")
         return df
     except Exception as e:
-        print(f"  ❌ {symbol} (Twelve Data): Ocurrió un error - {e}")
+        print(f"  {symbol} (Twelve Data): Ocurrió un error - {e}")
         return None
 
 # ==============================================================================
@@ -120,12 +128,15 @@ for i, ticker in enumerate(TICKERS):
     print(f"\n[{i+1}/{len(TICKERS)}] Procesando ticker: {ticker}")
     
     df_yf = descargar_yfinance(ticker)
+    df_yf = df_yf.round(2)
     if df_yf is not None: all_dataframes.append(df_yf)
         
     df_av = descargar_alpha_vantage(ticker)
+    df_av = df_av.round(2)
     if df_av is not None: all_dataframes.append(df_av)
 
     df_td = descargar_twelve_data(ticker)
+    df_td = df_td.round(2)
     if df_td is not None: all_dataframes.append(df_td)
 
 # ==============================================================================
