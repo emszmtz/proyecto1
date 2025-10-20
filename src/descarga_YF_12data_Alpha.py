@@ -70,7 +70,7 @@ def descargar_alpha_vantage(symbol):
     print(f"  -> Obteniendo datos de Alpha Vantage para {symbol}...")
     try:
         # Usamos el timeout desglosado (conexión, lectura) para más robustez #Cambio
-        request= requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&outputsize=full&apikey={ALPHA_KEY}", timeout=(5, 15)) #Cambio
+        request= requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&outputsize=compact&apikey={ALPHA_KEY}", timeout=(5, 45)) #Cambio
         request.raise_for_status()
         data = request.json()
         #Buscamos el índice con un bucle 
