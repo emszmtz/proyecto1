@@ -9,3 +9,5 @@ salida_datos/
 __pycache__/
 .DS_Store
 venv/
+# Ignora todo el contenido de la carpeta 'basurillas'
+basurillas/
