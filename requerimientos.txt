@@ -1,4 +1,4 @@
-Núcleo y Manipulación de Datos
+
 pandas==2.2.2
 numpy==1.26.4
 APIs de Descarga de Datos
