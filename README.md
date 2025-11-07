@@ -1,4 +1,4 @@
-![Diagrama de Flujo del Proyecto](FlossFlow.png)
+![Diagrama de Flujo del Proyecto](FossFlow.png)
                             
 
 # PROYECTO 1 MIAX 14: ANALIZADOR DE CARTERA 
